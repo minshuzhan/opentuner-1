@@ -338,7 +338,6 @@ class Parameter(object):
     """
     assert len(cfgs)==len(ratio)
     r = random.random()
-    print r
     c = numpy.array(ratio, dtype=float)/sum(ratio)
     for i in range(len(c)):
       if r < sum(c[:i+1]):
@@ -736,6 +735,14 @@ class BooleanParameter(ComplexParameter):
   def search_space_size(self):
     return 2
 
+  def add_difference(self, cfg_dst, scale, cfg_b, cfg_c):
+    if not self.same_value(cfg_b,cfg_c):
+      self.normal_mutation(cfg_dst, scale)
+
+  def normal_mutation(self, dest, sigma, *args, **kwargs):
+    v = (self.get_value(dest)+random.gauss(0, sigma) > 0.5)
+    self.set_value(dest, v)
+
   def sv_swarm(self, position, global_best, local_best, omega=1, phi_g=0.5,
                phi_l=0.5, velocity=0, *args, **kwargs):
     """ 
@@ -986,10 +993,6 @@ class PermutationParameter(ComplexParameter):
     r2 = random.randint(0, len(p1) - d)
     [c1.remove(i) for i in p2[r2:r2 + d]]
     self.set_value(dest, c1[:r1] + p2[r2:r2 + d] + c1[r1:])
-
-  def search_space_size(self):
-    return math.factorial(max(1, len(self._items)))
-
 
 class ScheduleParameter(PermutationParameter):
   def __init__(self, name, items, deps):
