@@ -837,6 +837,13 @@ class PermutationParameter(ComplexParameter):
   def search_space_size(self):
     return math.factorial(max(1, len(self._items)))
 
+  def add_difference(self, cfg_dst, scale, cfg_b, cfg_c, dist_func='swap_dist'):
+    b = self.get_value(cfg_b)
+    c = self.get_value(cfg_c)
+    d = int(scale*getattr(self, dist_func)(cfg_b, cfg_c))
+    [self.sv_mutate(cfg_dst) for i in range(d)]  # apply d random swaps
+    
+
   # Stochastic Variator     
   def sv_mutate(self, cfg, mchoice='random_swap', *args, **kwargs):
     getattr(self, mchoice)(cfg, cfg, *args, **kwargs)
@@ -860,7 +867,29 @@ class PermutationParameter(ComplexParameter):
         self.sv_cross(position, position, local_best, xchoice, strength)
 
 
-  # swap-based operators
+# Swap-based operator
+  def swap_dist(self, cfg1, cfg2):
+    """
+    Return list of swaps needed to transform the permutation from
+    cfg1 to cfg2. A swap is represented by a tuple of indices (a,b)
+    which swaps items at position a and b in the permutation. See
+    "Particle swarm optimization for traveling salesman problem"
+    http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=1259748
+    """
+    p1 = self.get_value(cfg1)[:]
+    p2 = self.get_value(cfg2)[:]
+    assert len(p1) == len(p2)
+    swaps = []
+    for i in range(len(p1)):
+      if p1[i]!=p2[i]:
+        j=p1.index(p2[i])
+        swaps.append( (i,j))
+        v = p1[i]
+        p1[i]=p1[j]
+        p1[j]=v
+
+    return len(swaps)
+
   def random_swap(self, dest, cfg, *args, **kwargs):
     """
     swap a random pair of items seperated by distance d

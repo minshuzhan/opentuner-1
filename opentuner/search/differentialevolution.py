@@ -136,7 +136,42 @@ class DifferentialEvolutionAlt(DifferentialEvolution):
     super(DifferentialEvolutionAlt, self).__init__(**kwargs)
 
 
+from manipulator import *
+class DESubdomain(DifferentialEvolution):
+  """ DE Technique that only optimizes a chosen parameter type.""" 
+  def __init__(self, domain_param, *args, **kwargs):
+    super(DESubdomain, self).__init__(*args, **kwargs)
+    self.domain_param = domain_param
+    self.name = 'DE-'+domain_param.__name__[:-9]
+
+  def create_new_configuration(self, parent_pop_member):
+    cfg = self.manipulator.copy(parent_pop_member.config.data)
+    cfg_params = self.manipulator.proxy(cfg)
+
+    # pick 3 random parents, not pp
+    shuffled_pop = list(set(self.population) - set([parent_pop_member]))
+
+    # share information with other techniques
+    if self.driver.best_result:
+      shuffled_pop += ([PopulationMember(self.driver.best_result.configuration)]
+                       * self.information_sharing)
+
+    random.shuffle(shuffled_pop)
+    x1, x2, x3 = map(_.config.data, shuffled_pop[0:3])
+
+    use_f = random.random() / 2.0 + 0.5
+
+    params = filter(lambda x: isinstance(x, self.domain_param), self.manipulator.parameters(cfg))
+    for i, p in enumerate(params):
+      if i < self.n_cross or random.random() < self.cr:
+        # cfg = x1 + use_f*(x2 - x3)
+        p.set_linear(cfg, 1.0, x1, use_f, x2, -use_f, x3)
+    return cfg
+
+
 register(DifferentialEvolution())
 register(DifferentialEvolutionAlt())
-
+register(DESubdomain(PermutationParameter))
+register(DESubdomain(BooleanParameter))
+register(DESubdomain(PowerOfTwoParameter))
 
