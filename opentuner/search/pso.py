@@ -7,13 +7,19 @@ import math
 
 class PSO(technique.SequentialSearchTechnique ):
   """ Particle Swarm Optimization """
-  def __init__(self, crossover, N = 30, init_pop=None, *pargs, **kwargs):
+  def __init__(self, crossover, domain_param=None, N = 3, init_pop=None, *pargs, **kwargs):
     """
     crossover: name of crossover operator function
+    domain_params: list of applicable Parameter classes
     """
     super(PSO, self).__init__(*pargs, **kwargs)
     self.crossover = crossover
-    self.name = 'pso-'+crossover
+    if domain_param:
+      self.domain_param = domain_param
+      self.name = '-'.join(['PSO', crossover, domain_param.__name__[:-9]])
+    else:
+      self.name = 'PSO-'+crossover
+      self.domain_param = Parameter
     self.init_pop = init_pop
     self.N = N
 
@@ -27,7 +33,7 @@ class PSO(technique.SequentialSearchTechnique ):
   
     population = self.init_pop
     if not population:
-      population = [HybridParticle(m, self.crossover) for i in range(self.N)]
+      population = [HybridParticle(m, self.crossover, self.domain_param) for i in range(self.N)]
 
     for p in population:
       yield driver.get_configuration(p.position)
@@ -43,7 +49,7 @@ class PSO(technique.SequentialSearchTechnique ):
           particle.best = particle.position
 
 class HybridParticle(object):
-  def __init__(self, m, crossover_choice, omega=0.5, phi_l=0.5, phi_g=0.5):
+  def __init__(self, m, crossover_choice, domain_param, omega=0.5, phi_l=0.5, phi_g=0.5):
 
     """
     m: a configuraiton manipulator
@@ -53,6 +59,7 @@ class HybridParticle(object):
     """
 
     self.manipulator = m
+    self.domain_param = domain_param
     self.position = self.manipulator.random()   
     self.best = self.position
     self.omega = omega
@@ -71,11 +78,28 @@ class HybridParticle(object):
     """
     m = self.manipulator
     for p in m.params:
-      self.velocity[p.name] = p.sv_swarm(self.position, global_best, self.best, omega=self.omega, phi_g=self.phi_g, phi_l=self.phi_l, c_choice=self.crossover_choice, velocity=self.velocity[p.name])
+      if isinstance(p, self.domain_param):
+        self.velocity[p.name] = p.sv_swarm(self.position, global_best, self.best, omega=self.omega, phi_g=self.phi_g, phi_l=self.phi_l, c_choice=self.crossover_choice, velocity=self.velocity[p.name])
+        print p.name, self.position[p.name], self.velocity[p.name]
 
 
-technique.register(PSO(crossover = 'OX3'))
-technique.register(PSO(crossover = 'OX1'))
-technique.register(PSO(crossover = 'PMX'))
-technique.register(PSO(crossover = 'PX'))
-technique.register(PSO(crossover = 'CX'))
+technique.register(PSO('OX3', PermutationParameter))
+technique.register(PSO('OX1', PermutationParameter))
+technique.register(PSO('PMX', PermutationParameter))
+technique.register(PSO('PX', PermutationParameter))
+technique.register(PSO('CX', PermutationParameter))
+technique.register(PSO('OX3', BooleanParameter))
+technique.register(PSO('OX1', BooleanParameter))
+technique.register(PSO('PMX', BooleanParameter))
+technique.register(PSO('PX', BooleanParameter))
+technique.register(PSO('CX', BooleanParameter))
+technique.register(PSO('OX3'))
+technique.register(PSO('OX1'))
+technique.register(PSO('PMX'))
+technique.register(PSO('PX'))
+technique.register(PSO('CX'))
+technique.register(PSO('OX3'))
+technique.register(PSO('OX1', PowerOfTwoParameter))
+technique.register(PSO('PMX', PowerOfTwoParameter))
+technique.register(PSO('PX', PowerOfTwoParameter))
+technique.register(PSO('CX', PowerOfTwoParameter))
