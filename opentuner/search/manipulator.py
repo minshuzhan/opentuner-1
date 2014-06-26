@@ -202,6 +202,49 @@ class ConfigurationManipulator(ConfigurationManipulatorBase):
         pass
     return cfg
 
+  def crossover_2p(self, cfg1, cfg2, ratio=0.3, domain=None):
+    """ 
+    2-point crossover at configuration level. Two cutpoints are both randomly chosen.
+    domain: Parameter class or None. Constrains the crossover to apply to only parameters of specific type.
+    Return 2 child cfg's. 
+    """
+    params = self.parameters(cfg1)    #TODO: check cfg2
+    if domain:
+      params = filter(lambda x: isinstance(x, domain))
+    c1, c2 = sorted([random.choice(range(len(params))), random.choice(range(len(params)))])
+    print c1, c2
+    seg = params[c1:c2]
+    new1 = self.copy(cfg1)
+    new2 = self.copy(cfg2)
+    for p in seg:
+      p.copy_value(cfg2, new1)
+      p.copy_value(cfg1, new2)
+    return new1, new2
+
+  def crossover_uniform(self, cfg1, cfg2, ratio=0.3, domain=None):
+    """ 
+    Uniform crossover at configuration level. Each parameter is 
+    ratio: float between 0 and 1. Indicates portion of child coming from cfg1. Defaulted to 0.3.
+    domain: Parameter class or None. Constrains the crossover to apply to only parameters of specific type.
+    Return a child cfg.
+    """
+    params = self.parameters(cfg1)    #TODO: check cfg2
+    if domain:
+      params = filter(lambda x: isinstance(x, domain))
+    new = self.copy(cfg2)
+    for param in params:
+      if random.random()<ratio:
+        param.copy_value(cfg1, new)
+    return new
+
+  def mutate(self, cfg, mr=0.01):
+    """
+    Mutate each parameter in place with probability mr.
+    """
+    for param in self.parameters(cfg):
+      if random.random()<mr:
+        param.sv_mutate(cfg)
+
   def applySVs(self, cfg, sv_map, args, kwargs):
     """
     Apply operators to each parameter according to given map. Updates cfg.
