@@ -210,9 +210,8 @@ class ConfigurationManipulator(ConfigurationManipulatorBase):
     """
     params = self.parameters(cfg1)    #TODO: check cfg2
     if domain:
-      params = filter(lambda x: isinstance(x, domain))
+      params = filter(lambda x: isinstance(x, domain), params)
     c1, c2 = sorted([random.choice(range(len(params))), random.choice(range(len(params)))])
-    print c1, c2
     seg = params[c1:c2]
     new1 = self.copy(cfg1)
     new2 = self.copy(cfg2)
@@ -221,7 +220,7 @@ class ConfigurationManipulator(ConfigurationManipulatorBase):
       p.copy_value(cfg1, new2)
     return new1, new2
 
-  def crossover_uniform(self, cfg1, cfg2, ratio=0.3, domain=None):
+  def crossover_uniform(self, cfg1, cfg2, ratio=0.5, domain=None):
     """ 
     Uniform crossover at configuration level. Each parameter is 
     ratio: float between 0 and 1. Indicates portion of child coming from cfg1. Defaulted to 0.3.
@@ -230,18 +229,21 @@ class ConfigurationManipulator(ConfigurationManipulatorBase):
     """
     params = self.parameters(cfg1)    #TODO: check cfg2
     if domain:
-      params = filter(lambda x: isinstance(x, domain))
+      params = filter(lambda x: isinstance(x, domain), params)
     new = self.copy(cfg2)
     for param in params:
       if random.random()<ratio:
         param.copy_value(cfg1, new)
-    return new
+    return [new]
 
-  def mutate(self, cfg, mr=0.01):
+  def mutate(self, cfg, mr=0.01, domain=None):
     """
     Mutate each parameter in place with probability mr.
     """
-    for param in self.parameters(cfg):
+    params = self.parameters(cfg)
+    if domain:
+      params = filter(lambda x: isinstance(x, domain), params)
+    for param in params:
       if random.random()<mr:
         param.sv_mutate(cfg)
 
