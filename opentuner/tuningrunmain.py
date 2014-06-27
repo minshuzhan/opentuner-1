@@ -68,7 +68,7 @@ the_logging_config = {
                'file': {'class': 'logging.FileHandler',
                         'filename': 'opentuner.log',
                         'formatter': 'file',
-                        'level': 'WARNING'}},
+                        'level': 'INFO'}},
   'loggers': {'': {'handlers': ['console', 'file'],
                    'level': 'INFO',
                    'propagate': True}}}
@@ -105,7 +105,7 @@ class TuningRunMain(object):
         else:
           params_dict[cls]=[p]
       for k in params_dict:
-        print k, params_dict[k]
+        print k, len(params_dict[k]),params_dict[k]
         print
       sys.exit(0)
 
