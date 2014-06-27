@@ -26,7 +26,7 @@ class DifferentialEvolution(SearchTechnique):
   """
 
   def __init__(self,
-               population_size=30,
+               population_size=40,
                cr=0.9,  # crossover rate
                n_cross=1,  # force at least 1 to crossover
                information_sharing=1,  # number token sharing pop members

@@ -7,7 +7,7 @@ import math
 
 class PSO(technique.SequentialSearchTechnique ):
   """ Particle Swarm Optimization """
-  def __init__(self, crossover, domain_param=None, N = 3, init_pop=None, *pargs, **kwargs):
+  def __init__(self, crossover, domain_param=None, N = 40, init_pop=None, *pargs, **kwargs):
     """
     crossover: name of crossover operator function
     domain_params: list of applicable Parameter classes
@@ -80,7 +80,6 @@ class HybridParticle(object):
     for p in m.params:
       if isinstance(p, self.domain_param):
         self.velocity[p.name] = p.sv_swarm(self.position, global_best, self.best, omega=self.omega, phi_g=self.phi_g, phi_l=self.phi_l, c_choice=self.crossover_choice, velocity=self.velocity[p.name])
-        print p.name, self.position[p.name], self.velocity[p.name]
 
 
 technique.register(PSO('OX3', PermutationParameter))

@@ -16,11 +16,17 @@ class GeneticAlgorithm(SequentialSearchTechnique):
   """
 
   def __init__(self,
-               population_size=10,
+               domain_param=None,
+               population_size=40,
                cr=0.9,  # crossover rate
                mr=0.01,  # mutation rate
-               elite_count=2,  # number of population members with high fitness to enter the next generation directly
+               elite_count=1,  # number of population members with high fitness to enter the next generation directly
                *pargs, **kwargs):
+    super(GeneticAlgorithm, self).__init__(*pargs, **kwargs)
+    self.domain_param = domain_param
+    self.name='GA'
+    if domain_param:
+      self.name += '-'+domain_param.__name__[:-9]
 
     self.population_size = population_size
     self.cr = cr
@@ -28,7 +34,6 @@ class GeneticAlgorithm(SequentialSearchTechnique):
     self.elite_count = elite_count
     self.population_size = population_size
     self.population = None  # list of Configuration instances
-    super(GeneticAlgorithm, self).__init__(*pargs, **kwargs)
 
   def initial_population(self):
     self.population = [self.driver.get_configuration(self.manipulator.random()) for z in range(self.population_size)]
@@ -39,7 +44,6 @@ class GeneticAlgorithm(SequentialSearchTechnique):
     """
     #TODO: check if all candidates in population have been evaluated?
     i1, i2 = SUS(self.get_scores(), 2)
-    print 'SELECT', i1, i2
     return self.population[i1], self.population[i2] 
 
   def get_scores(self):
@@ -59,26 +63,26 @@ class GeneticAlgorithm(SequentialSearchTechnique):
       self.initial_population()
     for p in self.population:
       yield p
-    print 'Pop initiated'
+    log.degub('Population initiated')
     self.update_pop_scores()
 
     while True:
-      print 'NEW GEN'
+      log.debug('New Generation')
       self.population=sorted(self.population, key=lambda x: x.score, reverse=True)
-      print self.get_scores()
       new_gen=self.population[:self.elite_count]
+      log.debug('Scores', self.get_scores())
       # Create a new generation of population
       while len(new_gen)<self.population_size:
         # selection
         p1, p2 = self.select()
         # crossover
         if random.random()<self.cr:
-          children = self.manipulator.crossover_uniform(p1.data, p2.data)
+          children = self.manipulator.crossover_uniform(p1.data, p2.data, domain=self.domain_param)
         else:
           children = [p1.data,p2.data]
         # mutate
         for c in children:
-          self.manipulator.mutate(c, mr=self.mr)
+          self.manipulator.mutate(c, mr=self.mr, domain=self.domain_param)
           config = self.driver.get_configuration(c)
           yield config
           new_gen.append(config)
@@ -113,5 +117,9 @@ def SUS(scores, n):
     keep.append(i-1)
   return [score_index[i][1] for i in keep]
 
-register(GeneticAlgorithm(name='GA'))
-
+# Temporary import for constructing parameter-specific algorithm
+from manipulator import PermutationParameter, BooleanParameter, PowerOfTwoParameter
+register(GeneticAlgorithm(domain_param=PermutationParameter))
+register(GeneticAlgorithm(domain_param=BooleanParameter))
+register(GeneticAlgorithm(domain_param=PowerOfTwoParameter))
+register(GeneticAlgorithm())
