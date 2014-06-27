@@ -27,6 +27,7 @@ import re
 import subprocess
 import tempfile
 import textwrap
+import random
 from cStringIO import StringIO
 from fn import _
 from pprint import pprint
@@ -432,6 +433,7 @@ class HalideTuner(opentuner.measurement.MeasurementInterface):
     """called at the end of tuning"""
     print 'Final Configuration:'
     print self.cfg_to_schedule(configuration.data)
+    self.manipulator().save_to_file(configuration.data, '/'.join(['cfgs', self.program_name().split('.')[0]])+ str(hash(random.random()))+'.pk')
 
   def debug_log_schedule(self, filename, source):
     open(filename, 'w').write(source)
