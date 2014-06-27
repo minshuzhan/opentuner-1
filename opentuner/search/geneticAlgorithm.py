@@ -63,7 +63,7 @@ class GeneticAlgorithm(SequentialSearchTechnique):
       self.initial_population()
     for p in self.population:
       yield p
-    log.degub('Population initiated')
+    log.debug('Population initiated')
     self.update_pop_scores()
 
     while True:
