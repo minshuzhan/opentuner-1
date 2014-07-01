@@ -37,7 +37,7 @@ class MeasurementDriver(DriverBase):
     self.input_manager = input_manager
     self.commit = self.tuning_run_main.commit
     self.upper_limit_multiplier = 10.0
-    self.default_limit_multiplier = 2.0
+    self.default_limit_multiplier = 10.0
 
     self.laptime = time.time()
     self.machine = self.get_machine()

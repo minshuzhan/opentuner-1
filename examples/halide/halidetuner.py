@@ -384,7 +384,7 @@ class HalideTuner(opentuner.measurement.MeasurementInterface):
                  compile_result['time'], self.args.limit)
         return float('inf')
       elif returncode == 142 or returncode == -14:
-        log.info('program timeout %d (%.2f+%.2f cost)', math.ceil(limit),
+        log.info('program timeout %.2f (%.2f+%.2f cost)', limit,
                  compile_result['time'], result['time'])
         return None
       elif returncode != 0:

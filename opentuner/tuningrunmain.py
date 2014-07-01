@@ -68,9 +68,9 @@ the_logging_config = {
                'file': {'class': 'logging.FileHandler',
                         'filename': 'opentuner.log',
                         'formatter': 'file',
-                        'level': 'INFO'}},
+                        'level': 'DEBUG'}},
   'loggers': {'': {'handlers': ['console', 'file'],
-                   'level': 'INFO',
+                   'level': 'DEBUG',
                    'propagate': True}}}
 
 
@@ -144,6 +144,7 @@ class TuningRunMain(object):
 
 
   def init(self):
+    log.info('New run')
     if self.tuning_run is None:
       program_version = (self.measurement_interface
                          .db_program_version(self.session))

@@ -17,7 +17,7 @@ class GeneticAlgorithm(SequentialSearchTechnique):
 
   def __init__(self,
                domain_param=None,
-               population_size=40,
+               population_size=30,
                cr=0.9,  # crossover rate
                mr=0.01,  # mutation rate
                elite_count=1,  # number of population members with high fitness to enter the next generation directly
@@ -33,10 +33,20 @@ class GeneticAlgorithm(SequentialSearchTechnique):
     self.mr = mr
     self.elite_count = elite_count
     self.population_size = population_size
-    self.population = None  # list of Configuration instances
+    self.population = []  # list of Configuration instances
 
   def initial_population(self):
-    self.population = [self.driver.get_configuration(self.manipulator.random()) for z in range(self.population_size)]
+    # Initiate particles with seed configurations if given
+    seeds = self.driver.seed_cfgs_copy
+    for z in range(self.population_size):
+      if seeds:
+        seed = random.choice(seeds)
+        for p in self.manipulator.parameters(seed):
+          if isinstance(p, self.domain_param):
+            p.randomize(seed)
+      else:
+        seed = self.manipulator.random()
+      self.population.append(self.driver.get_configuration(seed)) 
 
   def select(self):
     """
@@ -55,6 +65,7 @@ class GeneticAlgorithm(SequentialSearchTechnique):
    #   scores.append(objective.config_relative(p, base))
    # return scores
    scores = [p.score for p in self.population]
+   log.debug(scores)
    return scores
 
   def main_generator(self):
