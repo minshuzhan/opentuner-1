@@ -5,7 +5,7 @@ import logging
 from fn import _
 from technique import register
 from technique import SequentialSearchTechnique
-
+import copy
 log = logging.getLogger(__name__)
 log.setLevel(logging.WARNING)
 
@@ -17,7 +17,7 @@ class GeneticAlgorithm(SequentialSearchTechnique):
 
   def __init__(self,
                domain_param=None,
-               population_size=30,
+               population_size=20,
                cr=0.9,  # crossover rate
                mr=0.01,  # mutation rate
                elite_count=1,  # number of population members with high fitness to enter the next generation directly
@@ -44,9 +44,12 @@ class GeneticAlgorithm(SequentialSearchTechnique):
         for p in self.manipulator.parameters(seed):
           if isinstance(p, self.domain_param):
             p.randomize(seed)
+        self.seed = seed
       else:
         seed = self.manipulator.random()
+        self.seed = None
       self.population.append(self.driver.get_configuration(seed)) 
+
 
   def select(self):
     """
@@ -128,9 +131,4 @@ def SUS(scores, n):
     keep.append(i-1)
   return [score_index[i][1] for i in keep]
 
-# Temporary import for constructing parameter-specific algorithm
-from manipulator import PermutationParameter, BooleanParameter, PowerOfTwoParameter
-register(GeneticAlgorithm(domain_param=PermutationParameter))
-register(GeneticAlgorithm(domain_param=BooleanParameter))
-register(GeneticAlgorithm(domain_param=PowerOfTwoParameter))
 register(GeneticAlgorithm())

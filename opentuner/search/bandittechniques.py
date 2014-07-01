@@ -263,14 +263,4 @@ register(AUCBanditMetaTechnique([
         simplextechniques.RandomNelderMead(),
 	simulatedannealing.PseudoAnnealingSearch()
       ], name = "test2"))
-register(AUCBanditMetaTechnique([
-	PSO(crossover='OX1'),
-	PSO(crossover='PMX'),
-	PSO(crossover='PX'),
-	evolutionarytechniques.GA(crossover='OX1', crossover_rate=0.5), 
-	evolutionarytechniques.GA(crossover='PMX', crossover_rate=0.5), 
-	evolutionarytechniques.GA(crossover='PX', crossover_rate=0.5), 
-	differentialevolution.DifferentialEvolutionAlt(),
-        globalGA.NormalGreedyMutation( crossover_rate=0.5, crossover_strength=0.2, name='GGA')
-	], name='PSO_GA_DE'))
 

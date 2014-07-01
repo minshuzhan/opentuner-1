@@ -147,10 +147,14 @@ class DifferentialEvolutionAlt(DifferentialEvolution):
 from manipulator import *
 class DESubdomain(DifferentialEvolution):
   """ DE Technique that only optimizes a chosen parameter type.""" 
-  def __init__(self, domain_param, *args, **kwargs):
+  def __init__(self, domain_param=None, *args, **kwargs):
     super(DESubdomain, self).__init__(*args, **kwargs)
-    self.domain_param = domain_param
-    self.name = 'DE-'+domain_param.__name__[:-9]
+    if domain_param:
+      self.domain_param = domain_param
+      self.name = '-'.join(['DE',domain_param.__name__[:-9]])
+    else:
+      self.domain_param = Parameter
+      self.name = 'DE'
 
   def create_new_configuration(self, parent_pop_member):
     cfg = self.manipulator.copy(parent_pop_member.config.data)
@@ -179,7 +183,4 @@ class DESubdomain(DifferentialEvolution):
 
 register(DifferentialEvolution())
 register(DifferentialEvolutionAlt())
-register(DESubdomain(PermutationParameter))
-register(DESubdomain(BooleanParameter))
-register(DESubdomain(PowerOfTwoParameter))
-
+register(DESubdomain())
