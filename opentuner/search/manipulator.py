@@ -514,7 +514,10 @@ class NumericParameter(PrimitiveParameter):
       return self.max_value - self.min_value + 1  # inclusive range
 
   def sv_mutate(self, cfg, mchoice='normal_mutation', *args, **kwargs):
-    getattr(self, mchoice)(cfg, *args, **kwargs)
+    vmin, vmax = self.legal_range(cfg)
+    # Gaussian noise with variance that scales with parameter's range
+    var = (vmax - vmin)*1.0    
+    getattr(self, mchoice)(cfg, sigma=var, *args, **kwargs)
 
 
 class IntegerParameter(NumericParameter):
