@@ -245,7 +245,9 @@ class ConfigurationManipulator(ConfigurationManipulatorBase):
       params = filter(lambda x: isinstance(x, domain), params)
     for param in params:
       if random.random()<mr:
+        old = copy.deepcopy(cfg)
         param.sv_mutate(cfg)
+        print param.name, 'mutated', not param.same_value(old, cfg)
 
   def applySVs(self, cfg, sv_map, args, kwargs):
     """
@@ -561,7 +563,7 @@ class NumericParameter(PrimitiveParameter):
   def sv_mutate(self, cfg, mchoice='normal_mutation', *args, **kwargs):
     vmin, vmax = self.legal_range(cfg)
     # Gaussian noise with variance that scales with parameter's range
-    var = (vmax - vim)*1.0    
+    var = (vmax - vmin)*1.0    
     getattr(self, mchoice)(cfg, sigma=var, *args, **kwargs)
 
 
