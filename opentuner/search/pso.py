@@ -7,7 +7,7 @@ import math
 
 class PSO(technique.SequentialSearchTechnique ):
   """ Particle Swarm Optimization """
-  def __init__(self, crossover, domain_param=None, N = 40, init_pop=None, *pargs, **kwargs):
+  def __init__(self, crossover, domain_param=None, N = 30, *pargs, **kwargs):
     """
     crossover: name of crossover operator function
     domain_params: list of applicable Parameter classes
@@ -20,7 +20,6 @@ class PSO(technique.SequentialSearchTechnique ):
     else:
       self.name = 'PSO-'+crossover
       self.domain_param = Parameter
-    self.init_pop = init_pop
     self.N = N
 
   def main_generator(self):
@@ -30,10 +29,11 @@ class PSO(technique.SequentialSearchTechnique ):
     m = self.manipulator
     def config(cfg):
       return driver.get_configuration(cfg)
-  
-    population = self.init_pop
-    if not population:
-      population = [HybridParticle(m, self.crossover, self.domain_param) for i in range(self.N)]
+    # Initiate particles with seed configurations if given
+    seeds = self.driver.seed_cfgs_copy
+    if not seeds:
+      seeds = [None]
+    population = [HybridParticle(m, self.crossover, self.domain_param, cfg=random.choice(seeds)) for i in range(self.N)]
 
     for p in population:
       yield driver.get_configuration(p.position)
@@ -49,7 +49,7 @@ class PSO(technique.SequentialSearchTechnique ):
           particle.best = particle.position
 
 class HybridParticle(object):
-  def __init__(self, m, crossover_choice, domain_param, omega=0.5, phi_l=0.5, phi_g=0.5):
+  def __init__(self, m, crossover_choice, domain_param, omega=0.5, phi_l=0.5, phi_g=0.5, cfg=None):
 
     """
     m: a configuraiton manipulator
@@ -60,7 +60,13 @@ class HybridParticle(object):
 
     self.manipulator = m
     self.domain_param = domain_param
-    self.position = self.manipulator.random()   
+    if cfg:
+      self.position = cfg
+      for p in m.parameters(cfg):
+        if isinstance(p, domain_param):
+          p.randomize(self.position)
+    else:
+      self.position = self.manipulator.random()   
     self.best = self.position
     self.omega = omega
     self.phi_l = phi_l
@@ -82,23 +88,9 @@ class HybridParticle(object):
         self.velocity[p.name] = p.sv_swarm(self.position, global_best, self.best, omega=self.omega, phi_g=self.phi_g, phi_l=self.phi_l, c_choice=self.crossover_choice, velocity=self.velocity[p.name])
 
 
-technique.register(PSO('OX3', PermutationParameter))
-technique.register(PSO('OX1', PermutationParameter))
-technique.register(PSO('PMX', PermutationParameter))
-technique.register(PSO('PX', PermutationParameter))
-technique.register(PSO('CX', PermutationParameter))
-technique.register(PSO('OX3', BooleanParameter))
-technique.register(PSO('OX1', BooleanParameter))
-technique.register(PSO('PMX', BooleanParameter))
-technique.register(PSO('PX', BooleanParameter))
-technique.register(PSO('CX', BooleanParameter))
+technique.register(PSO('OX3', domain_param=PermutationParameter))
 technique.register(PSO('OX3'))
 technique.register(PSO('OX1'))
 technique.register(PSO('PMX'))
 technique.register(PSO('PX'))
 technique.register(PSO('CX'))
-technique.register(PSO('OX3'))
-technique.register(PSO('OX1', PowerOfTwoParameter))
-technique.register(PSO('PMX', PowerOfTwoParameter))
-technique.register(PSO('PX', PowerOfTwoParameter))
-technique.register(PSO('CX', PowerOfTwoParameter))

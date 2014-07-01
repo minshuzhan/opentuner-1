@@ -26,7 +26,7 @@ argparser.add_argument('--bail-threshold', type=int, default=500,
                        help='abort if no requests have been made in X generations')
 argparser.add_argument('--no-dups', action='store_true',
                        help='don\'t print out warnings for duplicate requests')
-argparser.add_argument('--seed-configuration', action='append', default=[],
+argparser.add_argument('--seed-configuration', '-sd', action='append', default=[],
                        metavar='FILENAME', help="""
                            Start search at a given configuration.  Can be
                            specified multiple times.  Configurations are loaded
@@ -60,9 +60,11 @@ class SearchDriver(DriverBase):
       t.set_driver(self)
     self.root_technique.set_driver(self)
     self.seed_cfgs = []
+    self.seed_cfgs_copy = []
     for cfg_filename in reversed(self.args.seed_configuration):
       if os.path.exists(cfg_filename):
         self.seed_cfgs.append(manipulator.load_from_file(cfg_filename))
+        self.seed_cfgs_copy.append(manipulator.load_from_file(cfg_filename))
       else:
         log.error('no such file for --seed-configuration %s', cfg_filename)
 
@@ -128,7 +130,7 @@ class SearchDriver(DriverBase):
                            request_date=datetime.now(),
                            tuning_run=self.tuning_run)
       else:
-        dr = self.root_technique.desired_result()
+      	dr = self.root_technique.desired_result()
       if dr is None:
         log.debug("no desired result, skipping to testing phase")
         break

@@ -26,7 +26,7 @@ class DifferentialEvolution(SearchTechnique):
   """
 
   def __init__(self,
-               population_size=40,
+               population_size=30,
                cr=0.9,  # crossover rate
                n_cross=1,  # force at least 1 to crossover
                information_sharing=1,  # number token sharing pop members
@@ -37,16 +37,24 @@ class DifferentialEvolution(SearchTechnique):
     self.cr = cr
     self.n_cross = n_cross
     self.information_sharing = information_sharing
-    self.population = None
+    self.population = []
     self.duplicate_retries = duplicate_retries
     self.limit = None
     super(DifferentialEvolution, self).__init__(*pargs, **kwargs)
 
   def initial_population(self):
-    self.population = [PopulationMember(
+    seeds = self.driver.seed_cfgs_copy
+    for z in range(self.population_size):
+      if seeds:
+        seed = random.choice(seeds)
+        for p in self.manipulator.parameters(seed):
+          if isinstance(p, self.domain_param):
+            p.randomize(seed)
+      else:
+        seed = self.manipulator.random()
+      self.population.append(PopulationMember(
         self.driver.get_configuration(
-            self.manipulator.random()), submitted=False)
-        for z in xrange(self.population_size)]
+            seed), submitted=False))
 
   def oldest_pop_member(self):
     # since tests are run in parallel, exclude things with a replacement pending
