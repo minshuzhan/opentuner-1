@@ -54,7 +54,7 @@ class PSO(technique.SequentialSearchTechnique ):
       yield driver.get_configuration(p.position)
 
     while True:
-      for particle in population:
+      for particle in self.population:
         g = driver.best_result.configuration.data
         old=m.copy(particle.position)
         particle.move(g)
