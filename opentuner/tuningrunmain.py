@@ -144,7 +144,6 @@ class TuningRunMain(object):
 
 
   def init(self):
-    log.info('New run')
     if self.tuning_run is None:
       program_version = (self.measurement_interface
                          .db_program_version(self.session))

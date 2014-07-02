@@ -124,14 +124,13 @@ class StatsMain(object):
     dir_label_runs = defaultdict(lambda: defaultdict(list))
     for session in self.dbs:
       # Get TuningRuns 
-      q = (session.query(resultsdb.models.TuningRun)
-          .filter_by(state='COMPLETE')
-          .order_by('name'))
+      q = (session.query(resultsdb.models.TuningRun))
+      print q.count()
       # Filter by label
       if self.args.label:
         q = q.filter(TuningRun.name.in_(
           map(str.strip,self.args.label.split(','))))
-
+      print  q.count()
       for tr in q:
         # Get directory of a run
         d = run_dir(self.args.stats_dir, tr)
@@ -141,6 +140,7 @@ class StatsMain(object):
 
     summary_report = defaultdict(lambda: defaultdict(list))
     for d, label_runs in dir_label_runs.iteritems():
+      print d
       if not os.path.isdir(d):
         os.makedirs(d)
       session = label_runs.values()[0][0][1]
@@ -207,7 +207,7 @@ class StatsMain(object):
               )
 
 
-    with open("stats/summary.dat", 'w') as o:
+    with open(self.args.stats_dir+"/summary.dat", 'w') as o:
       # make summary report
       keys = sorted(reduce(set.union,
                            [set(x.keys()) for x in summary_report.values()],
@@ -335,52 +335,14 @@ class StatsMain(object):
           sec = quanta*self.args.stats_quanta
           out.writerow([sec] + value_function(values))
 
-   #data_file('_details.dat',
-   #          map(lambda x: 'run%d'%x, xrange(max_len)),
-   #          list)
-   #self.gnuplot_file(output_dir,
-   #                  label+'_details',
-   #                  [('"'+label+'_details.dat"'
-   #                    ' using 1:%d'%i +
-   #                    ' with lines'
-   #                    ' title "Run %d"'%i)
-   #                   for i in xrange(max_len)])
-
     data_file('_mean.dat',
-              ['#sec']+range(1,5+1)+ ['mean', 'stddev'],
+              ['#sec', 'mean', 'stddev'],
               lambda values: list(values) + [mean(values), stddev(values)])
-    self.gnuplot_file(output_dir,
-                      label+'_mean',
-                      ['"'+label+'_mean.dat" using 1:2 with lines title "Mean"'])
 
     def extract_percentiles(values):
       values = sorted(values)
       return ([values[int(round(p*(len(values)-1)))] for p in PCTSTEPS]
              + [mean(values)])
-    data_file("_percentiles.dat", PCTSTEPS + ['mean'], extract_percentiles)
-    self.gnuplot_file(output_dir,
-                      label+'_percentiles',
-                      reversed([
-                        '"'+label+'_percentiles.dat" using 1:2  with lines title "0%"',
-                      # '""                          using 1:3  with lines title "5%"',
-                        '""                          using 1:4  with lines title "10%"',
-                      # '""                          using 1:5  with lines title "25%"',
-                        '""                          using 1:6  with lines title "20%"',
-                      # '""                          using 1:7  with lines title "35%"',
-                        '""                          using 1:8  with lines title "30%"',
-                      # '""                          using 1:9  with lines title "45%"',
-                        '""                          using 1:10 with lines title "40%"',
-                      # '""                          using 1:11 with lines title "55%"',
-                        '""                          using 1:12 with lines title "50%"',
-                      # '""                          using 1:13 with lines title "65%"',
-                        '""                          using 1:14 with lines title "70%"',
-                      # '""                          using 1:15 with lines title "75%"',
-                        '""                          using 1:16 with lines title "80%"',
-                      # '""                          using 1:17 with lines title "85%"',
-                        '""                          using 1:18 with lines title "90%"',
-                      # '""                          using 1:19 with lines title "95%"',
-                        '"'+label+'_percentiles.dat" using 1:20 with lines title "100%"',
-                       ]))
 
   def gnuplot_file(self, output_dir, prefix, plotcmd):
     with open(os.path.join(output_dir, prefix+'.gnuplot'), 'w') as fd:

@@ -113,6 +113,31 @@ class PureRandom(SearchTechnique):
   def desired_configuration(self):
     return self.manipulator.random()
 
+import random
+class PartialRandom(SearchTechnique):
+  """ Random Search only on one Parameter type. Requires at least one seed configuration if domain_param is not None. """
+  def __init__(self, domain_param=None, *args, **kwargs):
+    super(PartialRandom, self).__init__(*args, **kwargs)
+    if not domain_param:
+      self.name = 'Random'
+    else:
+      self.name = 'Random-'+domain_param.__name__[:-9]
+    self.domain_param = domain_param
+
+  def desired_configuration(self):
+    if self.domain_param:
+      seed = random.choice(self.driver.seed_cfgs_copy)
+      cfg = self.manipulator.copy(seed)
+      params = filter(lambda x: isinstance(x, self.domain_param), self.manipulator.parameters(seed))
+      for p in params:
+	p.randomize(cfg)
+      return cfg
+    else:
+      return self.manipulator.random()
+    
+
+
+
 class AsyncProceduralSearchTechnique(SearchTechnique):
   def __init__(self, *pargs, **kwargs):
     super(AsyncProceduralSearchTechnique, self).__init__(*pargs, **kwargs)
@@ -214,7 +239,6 @@ def register(t):
   the_registry.append(t)
 
 register(PureRandom())
-
 
 def all_techniques(args):
   #import all modules in search to ensure techniques are Registered

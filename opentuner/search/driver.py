@@ -67,7 +67,7 @@ class SearchDriver(DriverBase):
         self.seed_cfgs_copy.append(manipulator.load_from_file(cfg_filename))
       else:
         log.error('no such file for --seed-configuration %s', cfg_filename)
-
+    log.info('New run by '+ self.root_technique.name)
     self.plugins.sort(key=_.priority)
 
   def add_plugin(self, p):
