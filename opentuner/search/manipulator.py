@@ -247,7 +247,6 @@ class ConfigurationManipulator(ConfigurationManipulatorBase):
       if random.random()<mr:
         old = copy.deepcopy(cfg)
         param.sv_mutate(cfg)
-        print param.name, 'mutated', not param.same_value(old, cfg)
 
   def applySVs(self, cfg, sv_map, args, kwargs):
     """
