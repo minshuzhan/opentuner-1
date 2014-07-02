@@ -35,20 +35,20 @@ register(AUCBanditMetaTechnique([
 	GeneticAlgorithm(domain_param=PermutationParameter),
 	DESubdomain(PermutationParameter)
 	],
-	name='PSO_GA_DE-PERM'))
+	name='PSO_GA_DE-Permutation'))
 
 register(AUCBanditMetaTechnique([
 	PSO('OX3', BooleanParameter),
 	GeneticAlgorithm(domain_param=BooleanParameter),
 	DESubdomain(BooleanParameter)
 	],
-	name='PSO_GA_DE-BOOL'))
+	name='PSO_GA_DE-Boolean'))
 
 register(AUCBanditMetaTechnique([
 	PSO('OX3', PowerOfTwoParameter),
 	GeneticAlgorithm(domain_param=PowerOfTwoParameter),
 	DESubdomain(PowerOfTwoParameter)
 	],
-	name='PSO_GA_DE-POW2'))
+	name='PSO_GA_DE-PowerOfTwo'))
 
 

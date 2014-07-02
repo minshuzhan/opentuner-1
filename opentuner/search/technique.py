@@ -113,11 +113,12 @@ class PureRandom(SearchTechnique):
   def desired_configuration(self):
     return self.manipulator.random()
 
+import random
 class PartialRandom(SearchTechnique):
   """ Random Search only on one Parameter type. Requires at least one seed configuration if domain_param is not None. """
   def __init__(self, domain_param=None, *args, **kwargs):
-    super(SearchTechnique, self).__init__(*args, **kwargs)
-    if domain_param:
+    super(PartialRandom, self).__init__(*args, **kwargs)
+    if not domain_param:
       self.name = 'Random'
     else:
       self.name = 'Random-'+domain_param.__name__[:-9]

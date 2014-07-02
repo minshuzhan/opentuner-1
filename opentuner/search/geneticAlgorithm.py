@@ -39,7 +39,7 @@ class GeneticAlgorithm(SequentialSearchTechnique):
     # Initiate particles with seed configurations if given
     seeds = self.driver.seed_cfgs_copy
     for z in range(self.population_size):
-      if seeds:
+      if seeds and self.domain_param:
         seed = random.choice(seeds)
         for p in self.manipulator.parameters(seed):
           if isinstance(p, self.domain_param):
