@@ -1,6 +1,6 @@
 # vim: tabstop=2 shiftwidth=2 softtabstop=2 expandtab autoindent smarttab
 from manipulator import Parameter, PermutationParameter, BooleanParameter, PowerOfTwoParameter
-from technique import register
+from technique import register, PartialRandom
 from bandittechniques import AUCBanditMetaTechnique
 from pso import PSO
 from geneticAlgorithm import GeneticAlgorithm
@@ -17,6 +17,11 @@ register(DESubdomain(PowerOfTwoParameter))
 register(GeneticAlgorithm(domain_param=PermutationParameter))
 register(GeneticAlgorithm(domain_param=BooleanParameter))
 register(GeneticAlgorithm(domain_param=PowerOfTwoParameter))
+
+register(PartialRandom(domain_param=PermutationParameter))
+register(PartialRandom(domain_param=BooleanParameter))
+register(PartialRandom(domain_param=PowerOfTwoParameter))
+register(PartialRandom())
 
 register(AUCBanditMetaTechnique([
 	PSO('OX3'),
