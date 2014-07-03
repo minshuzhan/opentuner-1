@@ -228,6 +228,7 @@ class ConfigurationManipulator(ConfigurationManipulatorBase):
     Return a child cfg.
     """
     params = self.parameters(cfg1)    #TODO: check cfg2
+    print self.equal(cfg1, cfg2)
     if domain:
       params = filter(lambda x: isinstance(x, domain), params)
     new = self.copy(cfg2)
@@ -247,6 +248,12 @@ class ConfigurationManipulator(ConfigurationManipulatorBase):
       if random.random()<mr:
         old = copy.deepcopy(cfg)
         param.sv_mutate(cfg)
+
+  def equal(self, cfg1, cfg2):
+    for p in self.parameters(cfg1):
+      if p.same_value(cfg1, cfg2):
+        return False
+    return True
 
   def applySVs(self, cfg, sv_map, args, kwargs):
     """

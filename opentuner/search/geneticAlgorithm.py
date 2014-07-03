@@ -17,7 +17,7 @@ class GeneticAlgorithm(SequentialSearchTechnique):
 
   def __init__(self,
                domain_param=None,
-               population_size=20,
+               population_size=10,
                cr=0.9,  # crossover rate
                mr=0.01,  # mutation rate
                elite_count=1,  # number of population members with high fitness to enter the next generation directly
