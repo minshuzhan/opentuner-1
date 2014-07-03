@@ -41,14 +41,15 @@ class GeneticAlgorithm(SequentialSearchTechnique):
     for z in range(self.population_size):
       if seeds and self.domain_param:
         seed = random.choice(seeds)
+        cfg = self.manipulator.copy(seed)
         for p in self.manipulator.parameters(seed):
           if isinstance(p, self.domain_param):
-            p.randomize(seed)
+            p.randomize(cfg)
         self.seed = seed
       else:
-        seed = self.manipulator.random()
+        cfg = self.manipulator.random()
         self.seed = None
-      self.population.append(self.driver.get_configuration(seed)) 
+      self.population.append(self.driver.get_configuration(cfg)) 
 
 
   def select(self):

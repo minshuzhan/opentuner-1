@@ -7,7 +7,7 @@ import math
 
 class PSO(technique.SequentialSearchTechnique ):
   """ Particle Swarm Optimization """
-  def __init__(self, crossover='OX3', domain_param=None, N = 20, *pargs, **kwargs):
+  def __init__(self, crossover='OX3', domain_param=None, population_size = 20, *pargs, **kwargs):
     """
     crossover: name of crossover operator function
     domain_params: list of applicable Parameter classes
@@ -20,7 +20,24 @@ class PSO(technique.SequentialSearchTechnique ):
     else:
       self.name = 'PSO'
       self.domain_param = Parameter
-    self.N = N
+    self.population_size = population_size
+    self.population = []
+
+  def initial_population(self):
+    # Initiate particles with seed configurations if given
+    seeds = self.driver.seed_cfgs_copy
+    for z in range(self.population_size):
+      if seeds and self.domain_param:
+        seed = random.choice(seeds)
+        cfg = self.manipulator.copy(seed)
+        for p in self.manipulator.parameters(seed):
+          if isinstance(p, self.domain_param):
+            p.randomize(cfg)
+        self.seed = seed
+      else:
+        cfg = self.manipulator.random()
+        self.seed = None
+      self.population.append(HybridParticle(self.manipulator, self.crossover, self.domain_param, position=cfg)) 
 
   def main_generator(self):
 
@@ -31,15 +48,13 @@ class PSO(technique.SequentialSearchTechnique ):
       return driver.get_configuration(cfg)
     # Initiate particles with seed configurations if given
     seeds = self.driver.seed_cfgs_copy
-    if not seeds:
-      seeds = [None]
-    population = [HybridParticle(m, self.crossover, self.domain_param, cfg=random.choice(seeds)) for i in range(self.N)]
-
-    for p in population:
+    
+    self.initial_population()
+    for p in self.population:
       yield driver.get_configuration(p.position)
 
     while True:
-      for particle in population:
+      for particle in self.population:
         g = driver.best_result.configuration.data
         old=m.copy(particle.position)
         particle.move(g)
@@ -49,7 +64,7 @@ class PSO(technique.SequentialSearchTechnique ):
           particle.best = particle.position
 
 class HybridParticle(object):
-  def __init__(self, m, crossover_choice, domain_param, omega=0.5, phi_l=0.5, phi_g=0.5, cfg=None):
+  def __init__(self, m, crossover_choice, domain_param, omega=0.5, phi_l=0.5, phi_g=0.5, position=None):
 
     """
     m: a configuraiton manipulator
@@ -60,9 +75,9 @@ class HybridParticle(object):
 
     self.manipulator = m
     self.domain_param = domain_param
-    if cfg:
-      self.position = cfg
-      for p in m.parameters(cfg):
+    if position:
+      self.position = position
+      for p in m.parameters(position):
         if isinstance(p, domain_param):
           p.randomize(self.position)
     else:
