@@ -7,7 +7,6 @@ from technique import register
 from technique import SequentialSearchTechnique
 import copy
 log = logging.getLogger(__name__)
-log.setLevel(logging.WARNING)
 
 
 class GeneticAlgorithm(SequentialSearchTechnique):
@@ -17,7 +16,7 @@ class GeneticAlgorithm(SequentialSearchTechnique):
 
   def __init__(self,
                domain_param=None,
-               population_size=10,
+               population_size=30,
                cr=0.9,  # crossover rate
                mr=0.01,  # mutation rate
                elite_count=1,  # number of population members with high fitness to enter the next generation directly
@@ -69,7 +68,6 @@ class GeneticAlgorithm(SequentialSearchTechnique):
    #   scores.append(objective.config_relative(p, base))
    # return scores
    scores = [p.score for p in self.population]
-   log.debug(scores)
    return scores
 
   def main_generator(self):
@@ -82,14 +80,15 @@ class GeneticAlgorithm(SequentialSearchTechnique):
     self.update_pop_scores()
 
     while True:
-      log.debug('New Generation')
+      log.debug('Unique population members: %s'%len(set(map(lambda x: self.manipulator.hash_config(x.data), self.population))))
       self.population=sorted(self.population, key=lambda x: x.score, reverse=True)
       new_gen=self.population[:self.elite_count]
-      log.debug('Scores', self.get_scores())
+      log.debug('Scores %r' % self.get_scores())
       # Create a new generation of population
       while len(new_gen)<self.population_size:
         # selection
         p1, p2 = self.select()
+        log.debug('parents %r, %r'% (self.manipulator.hash_config(p1.data), self.manipulator.hash_config(p2.data)))
         # crossover
         if random.random()<self.cr:
           children = self.manipulator.crossover_uniform(p1.data, p2.data, domain=self.domain_param)
@@ -106,10 +105,9 @@ class GeneticAlgorithm(SequentialSearchTechnique):
 
   def update_pop_scores(self):
     pop = self.population
-    objective = self.driver.objective
-    base = pop[0] 
     for p in pop:
-      p.score = objective.config_relative(base,p)
+      # TODO WARNING: WORKS ONLY FOR MINIMIZING TIME! NOT READY FOR PUSH!
+      p.score = 1/min(map(lambda x: x.time, self.driver.results_query(config=p)))
 
 def SUS(scores, n):
   """ 
