@@ -5,6 +5,7 @@ import logging
 from fn import _
 from technique import register
 from technique import SequentialSearchTechnique
+import math
 import copy
 log = logging.getLogger(__name__)
 
@@ -56,7 +57,10 @@ class GeneticAlgorithm(SequentialSearchTechnique):
     Return two parent PopulationMember's selected from current population. Selection is fitness based. 
     """
     #TODO: check if all candidates in population have been evaluated?
-    i1, i2 = SUS(self.get_scores(), 2)
+    # Rank-based selection
+    raw = [1.0/i**0.5 for i in range(1, 1+self.population_size)]
+    scores = map(lambda x: x/sum(raw)*2, raw)
+    i1, i2 = SUS(scores, 2)
     return self.population[i1], self.population[i2] 
 
   def get_scores(self):
@@ -81,7 +85,7 @@ class GeneticAlgorithm(SequentialSearchTechnique):
 
     while True:
       log.debug('Unique population members: %s'%len(set(map(lambda x: self.manipulator.hash_config(x.data), self.population))))
-      self.population=sorted(self.population, key=lambda x: x.score, reverse=True)
+      self.population=sorted(self.population, key=lambda member: min(map(lambda x: x.time, self.driver.results_query(config=member)))) # sort population based on minimal run time of configuration
       new_gen=self.population[:self.elite_count]
       log.debug('Scores %r' % self.get_scores())
       # Create a new generation of population
