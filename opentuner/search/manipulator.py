@@ -228,13 +228,13 @@ class ConfigurationManipulator(ConfigurationManipulatorBase):
     Return a child cfg.
     """
     params = self.parameters(cfg1)    #TODO: check cfg2
-    print self.equal(cfg1, cfg2)
     if domain:
       params = filter(lambda x: isinstance(x, domain), params)
     new = self.copy(cfg2)
     for param in params:
       if random.random()<ratio:
         param.copy_value(cfg1, new)
+    log.info('Similarity: new-cfg1 %r, new-cfg2 %r, cfg1-cfg2 %r' % (self.nsame(new, cfg1), self.nsame(new, cfg2), self.nsame(cfg1, cfg2)))
     return [new]
 
   def mutate(self, cfg, mr=0.01, domain=None):
@@ -251,9 +251,17 @@ class ConfigurationManipulator(ConfigurationManipulatorBase):
 
   def equal(self, cfg1, cfg2):
     for p in self.parameters(cfg1):
-      if p.same_value(cfg1, cfg2):
+      if not p.same_value(cfg1, cfg2):
         return False
     return True
+
+  def nsame(self, cfg1, cfg2):
+    """ 
+    Return number of parameters that share the same values in cfg1 and cfg2.
+    """
+    t = 0
+    t=len(filter(lambda p: p.same_value(cfg1, cfg2), self.parameters(cfg1)))
+    return t 
 
   def applySVs(self, cfg, sv_map, args, kwargs):
     """
@@ -580,6 +588,17 @@ class IntegerParameter(NumericParameter):
     super(IntegerParameter, self).__init__(name, min_value, max_value, **kwargs)
 
   def sv_swarm(self, current, cfg1, cfg2, c=1, c1=0.5,
+               c2=0.5, velocity=0, *args, **kwargs):
+    vmin, vmax = self.legal_range(current)
+    v = velocity * c + (self.get_value(cfg1) - self.get_value(
+      current)) * c1 * random.random() + (self.get_value(
+      cfg2) - self.get_value(current)) * c2 * random.random()
+    p = int(round(self.get_value(current) + v))
+    p = min(vmax, max(p, vmin))
+    self.set_value(current, p)
+    return v
+
+  def sv_swarm2(self, current, cfg1, cfg2, c=1, c1=0.5,
                c2=0.5, velocity=0, sigma=0.2, *args, **kwargs):
     """ Updates current and returns new velocity """
     vmin, vmax = self.legal_range(current)
