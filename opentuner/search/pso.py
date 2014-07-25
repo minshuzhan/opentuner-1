@@ -4,6 +4,7 @@ from manipulator import *
 from opentuner.search import technique
 import random
 import math
+log = logging.getLogger(__name__)
 
 class PSO(technique.SequentialSearchTechnique ):
   """ Particle Swarm Optimization """
@@ -54,6 +55,7 @@ class PSO(technique.SequentialSearchTechnique ):
       yield driver.get_configuration(p.position)
 
     while True:
+      log.debug('Unique population members: %s'%len(set(map(lambda x: self.manipulator.hash_config(x.position), self.population))))
       for particle in self.population:
         g = driver.best_result.configuration.data
         old=m.copy(particle.position)
