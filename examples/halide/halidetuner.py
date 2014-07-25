@@ -86,6 +86,10 @@ parser.add_argument('--enable-store-at', action='store_true',
 parser.add_argument('--gated-store-reorder', action='store_true',
                     help='Only reorder storage if a special parameter is given')
 group = parser.add_mutually_exclusive_group()
+group.add_argument('--baseline', action='store_true',
+                   help='Return baseline score')
+group.add_argument('--run-configuration', 
+                   help='Run a particular configuration')
 group.add_argument('--random-test', action='store_true',
                    help='Generate a random configuration and run it')
 group.add_argument('--random-source', action='store_true',
@@ -639,6 +643,19 @@ def post_dominators(settings):
   return dom
 
 
+def baseline(args):
+  """ Return baseline score """
+  m = HalideTuner(args)
+  n = 20
+  scores = []
+  for i in range(n):
+    score = m.run_baseline()
+    scores.append(score)
+    print score
+  mean = sum(scores)/n
+  var = sum(map(lambda x: (x-mean)**2, scores))/n
+  print 'baseline mean:', mean, ' variance:', var
+ 
 def random_test(args):
   """
   Generate and run a random schedule
@@ -667,10 +684,15 @@ def random_source(args):
   source = m.schedule_to_source(schedule)
   print source
 
-
 def main(args):
   if args.random_test:
     random_test(args)
+  elif args.baseline:
+    baseline(args)
+  elif args.run_configuration:
+    m = HalideTuner(args)
+    cfg = m.manipulator().load_from_file(args.run_configuration)
+    print m.run_cfg(cfg)
   elif args.random_source:
     random_source(args)
   elif args.make_settings_file:
